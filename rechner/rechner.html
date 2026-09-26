@@ -1524,14 +1524,14 @@ function leadFormular(){
     '<div class="lead-box" onclick="event.stopPropagation()">'+
       '<h4>Vergleich als PDF</h4>'+
       '<p class="lsub">Wir schicken dir deinen persönlichen Vergleich als PDF zu. '+
-        'Du bekommst ihn gleichzeitig als Download.</p>'+
+        'Du bekommst ihn gleichzeitig als Download. Alle Felder sind Pflichtfelder.</p>'+
       '<div class="lreihe">'+
         '<label>Vorname<input id="lVor" autocomplete="given-name"></label>'+
         '<label>Nachname<input id="lNach" autocomplete="family-name"></label>'+
       '</div>'+
       '<label>E-Mail<input id="lMail" type="email" inputmode="email" autocomplete="email" '+
         'placeholder="name@beispiel.de"></label>'+
-      '<label>Telefon oder WhatsApp <span class="opt">optional</span>'+
+      '<label>Telefon oder WhatsApp'+
         '<input id="lTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="+971 …"></label>'+
       '<label class="lcheck"><input type="checkbox" id="lOk">'+
         '<span>Ich möchte den Vergleich per E-Mail erhalten und bin damit einverstanden, '+
@@ -1539,7 +1539,6 @@ function leadFormular(){
         'widerrufen. Näheres in der Datenschutzerklärung.</span></label>'+
       '<div class="lfehler" id="lFehler"></div>'+
       '<button class="lbtn" id="lSenden" onclick="leadSenden()">Vergleich zuschicken</button>'+
-      '<button class="lohne" onclick="leadOhne()">Nur herunterladen, ohne E-Mail</button>'+
       '<button class="lzu" onclick="leadZu()">Abbrechen</button>'+
     '</div>';
   d.onclick=leadZu;
@@ -1558,8 +1557,13 @@ function leadSenden(){
   const mail=(document.getElementById('lMail').value||'').trim();
   const ok=document.getElementById('lOk').checked;
   const f=document.getElementById('lFehler');
+  const vor=(document.getElementById('lVor').value||'').trim();
+  const nach=(document.getElementById('lNach').value||'').trim();
+  const tel=(document.getElementById('lTel').value||'').trim();
+  if(!vor||!nach){ f.textContent='Bitte gib deinen Vor- und Nachnamen ein.'; return; }
   if(!/^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$/.test(mail)){
     f.textContent='Bitte eine gültige E-Mail-Adresse eingeben.'; return; }
+  if(tel.replace(/[^0-9]/g,'').length<7){ f.textContent='Bitte gib deine Telefon- oder WhatsApp-Nummer ein, inklusive Ländervorwahl.'; return; }
   if(!ok){ f.textContent='Bitte bestätige die Einwilligung, damit wir dir schreiben dürfen.'; return; }
   f.textContent='';
   const knopf=document.getElementById('lSenden');
