@@ -8,7 +8,7 @@
   if (window.__eiTrack) return; window.__eiTrack = 1;
   var PIXEL_ID = '1533153958044916';
   var LOG_HOOK = 'https://hook.eu1.make.com/igybxkrqvyvcxp5dzbrtygfhwuo0b67v';
-  var PRIVACY = '/admin/datenschutzerklarung';
+  var PRIVACY = '?legal=datenschutz';
   var CKEY = 'eiconsent';
   var d = document, w = window;
 
@@ -150,6 +150,12 @@
       ov.classList.remove('on'); setTimeout(function () { ov.remove(); }, 300);
       if (v === 'all') loadPixel(); else { queue = []; }
     }
+    var pl = ov.querySelector('.eick p a');
+    if (pl) pl.onclick = function (e) {
+      var fl = dsLink(); if (!fl) return; /* Fallback: Link lädt Seite mit Datenschutz-Fenster */
+      e.preventDefault(); ov.style.display = 'none'; fl.click();
+      waitLegal(function () { ov.style.display = ''; });
+    };
     ov.querySelector('.eick-y').onclick = function () { done('all'); };
     ov.querySelector('.eick-n').onclick = function () { done('necessary'); };
   }
@@ -158,11 +164,24 @@
     var old = consent; consent = null; banner();
     if (old === 'all') { var o = d.getElementById('eick'); if (o) o.querySelector('.eick-n').addEventListener('click', function () { setTimeout(function () { location.reload(); }, 320); }); }
   };
+  function dsLink() {
+    var a = d.querySelectorAll('.ei-footer a, footer a');
+    for (var i = 0; i < a.length; i++) if (/^\s*(datenschutz|privacy)/i.test(a[i].textContent || '')) return a[i];
+    return null;
+  }
+  /* wartet, bis das Datenschutz-Fenster der Seite wieder geschlossen ist */
+  function waitLegal(cb) {
+    var seenOpen = false, n = 0;
+    var t = setInterval(function () {
+      var o = d.querySelector('.eilg-ov.open'); if (o) seenOpen = true;
+      if ((seenOpen && !o) || (!seenOpen && ++n > 40)) { clearInterval(t); cb(); }
+    }, 250);
+  }
   /* Link "Cookie-Einstellungen" neben den Datenschutz-Link im Footer setzen */
   function footerLink() {
-    var links = d.querySelectorAll('footer a[href*="datenschutz"], .ei-footer a[href*="datenschutz"], [class*="footer"] a[href*="datenschutz"]');
-    if (!links.length || d.getElementById('eick-link')) return;
-    var a0 = links[links.length - 1], a = d.createElement('a');
+    var a0 = dsLink();
+    if (!a0 || d.getElementById('eick-link')) return;
+    var a = d.createElement('a');
     a.id = 'eick-link'; a.href = '#'; a.className = a0.className; a.textContent = en() ? 'Cookie settings' : 'Cookie-Einstellungen';
     a.style.marginLeft = '16px';
     a.onclick = function (e) { e.preventDefault(); w.eiConsent(); };
@@ -170,9 +189,9 @@
   }
 
   function start() {
-    footerLink();
+    footerLink(); setTimeout(footerLink, 1500);
     if (consent === 'all') loadPixel();
-    else if (!consent && location.pathname.indexOf('datenschutz') < 0) banner();
+    else if (!consent) { if (q.get('legal')) waitLegal(banner); else banner(); }
   }
   if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', start); else start();
 })();

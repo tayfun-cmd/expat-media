@@ -1,0 +1,13 @@
+.eilg-ov{position:fixed;inset:0;z-index:100001;background:rgba(6,14,28,.82);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:none;align-items:flex-start;justify-content:center;padding:42px 20px;overflow-y:auto;font-family:'Instrument Sans',sans-serif}
+.eilg-ov.open{display:flex}
+.eilg-card{background:#0B1A33;border:1px solid rgba(255,255,255,.10);border-radius:20px;width:100%;max-width:760px;padding:40px 42px 34px;position:relative;box-shadow:0 30px 80px rgba(0,0,0,.55);color:#c2cfe2;margin:auto}
+.eilg-close{position:absolute;top:15px;right:18px;background:none;border:0;color:#9fb0cc;font-size:30px;line-height:1;cursor:pointer}
+.eilg-card h2{font-family:'Bricolage Grotesque',sans-serif;color:#fff;font-size:27px;margin:0 0 18px}
+.eilg-card h3{font-family:'Bricolage Grotesque',sans-serif;color:#fff;font-size:16px;margin:22px 0 7px}
+.eilg-card p{font-size:14.5px;line-height:1.65;margin:0 0 12px}
+.eilg-card strong{color:#eaf1fb}
+.eilg-card a{color:#4ECDC4;word-break:break-word}
+.eilg-card ul{margin:0 0 12px;padding-left:18px}
+.eilg-card li{font-size:14.5px;line-height:1.6;margin-bottom:7px}
+.eilg-addr{color:#fff;font-weight:600;line-height:1.6}
+@media(max-width:600px){.eilg-card{padding:30px 22px}.eilg-card h2{font-size:23px}}
