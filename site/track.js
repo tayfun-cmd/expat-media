@@ -153,9 +153,13 @@
     var pl = ov.querySelector('.eick p a');
     if (pl) pl.onclick = function (e) {
       var fl = dsLink(); if (!fl) return; /* Fallback: Link lädt Seite mit Datenschutz-Fenster */
-      e.preventDefault(); ov.style.display = 'none'; fl.click();
-      waitLegal(function () { ov.style.display = ''; });
+      e.preventDefault(); fl.click();
     };
+    /* Solange das Datenschutz-Fenster offen ist, Banner ausblenden */
+    var watch = setInterval(function () {
+      if (!d.getElementById('eick')) { clearInterval(watch); return; }
+      ov.style.display = d.querySelector('.eilg-ov.open') ? 'none' : '';
+    }, 200);
     ov.querySelector('.eick-y').onclick = function () { done('all'); };
     ov.querySelector('.eick-n').onclick = function () { done('necessary'); };
   }
