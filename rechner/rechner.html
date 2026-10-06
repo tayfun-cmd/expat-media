@@ -1515,6 +1515,7 @@ function PT(art,daten){
     else if(art==='unterlagen') w.eiTrack('RechnerUnterlagen',{tarif:(daten&&daten.tarif)||''});
   }catch(e){}
 }
+function capiLead(d){ try{ const w=window.parent; if(w&&w!==window&&w.eiLead) w.eiLead(leadEid,{email:d.email,phone:d.telefon,fn:d.vorname,ln:d.nachname},'Rechner'); }catch(e){} }
 function kampagne(){ try{ const w=window.parent; return (w&&w!==window&&w.eiAttr)?w.eiAttr():{}; }catch(e){ return {}; } }
 
 /* --- Zählung: sammelt anonym und schickt einmal pro Sitzung --- */
@@ -1680,7 +1681,7 @@ function pdfErzeugen(daten, fertigCb){
     });
     fetch(LEAD_HOOK,{method:'POST',headers:{'Content-Type':'application/json'},
                      body:JSON.stringify(nutzlast)})
-      .then(r=>{ leadZu(); leadDanke(daten.email, r.ok); Stat.merke('lead_gesendet'); })
+      .then(r=>{ leadZu(); leadDanke(daten.email, r.ok); capiLead(daten); Stat.merke('lead_gesendet'); })
       .catch(()=>{ leadZu(); leadDanke(daten.email, false); Stat.merke('lead_fehler'); })
       .then(()=>{ if(fertigCb) fertigCb(); });
   });

@@ -8,6 +8,7 @@
   if (window.__eiTrack) return; window.__eiTrack = 1;
   var PIXEL_ID = '1533153958044916';
   var LOG_HOOK = 'https://hook.eu1.make.com/igybxkrqvyvcxp5dzbrtygfhwuo0b67v';
+  var CAPI_HOOK = 'https://hook.eu1.make.com/uqwxhypptt2rlk8sed85qmg1mvj6kjwb';
   var PRIVACY = '?legal=datenschutz';
   var CKEY = 'eiconsent';
   var d = document, w = window;
@@ -22,7 +23,8 @@
   var q; try { q = new URLSearchParams(location.search); } catch (e) { q = { get: function () { return null; } }; }
   var keys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid'];
   var neu = keys.some(function (k) { return q.get(k); });
-  if (neu) { keys.forEach(function (k) { A[k] = q.get(k) || ''; }); }
+  if (neu) { keys.forEach(function (k) { A[k] = q.get(k) || ''; }); if (A.fbclid) A.fbts = Date.now(); }
+  if (q.get('fbtest')) ss('eifbtest', q.get('fbtest'));
   if (!A.ref) {
     var r = ''; try { r = d.referrer ? new URL(d.referrer).hostname : ''; } catch (e) { }
     if (r && r.indexOf(location.hostname.replace(/^www\./, '')) < 0) A.ref = r; else A.ref = A.ref || '';
@@ -89,6 +91,36 @@
   w.addEventListener('pagehide', function () { if (seen && !/bot|crawl|spider|headless/i.test(navigator.userAgent)) sendLog(); });
 
   var lastLead = 0;
+  /* ---------- Conversions API: Lead serverseitig über Make an Meta (nur mit Einwilligung) ---------- */
+  function sha(s) {
+    if (!s || !w.crypto || !crypto.subtle) return Promise.resolve('');
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)).then(function (b) {
+      return Array.prototype.map.call(new Uint8Array(b), function (x) { return ('0' + x.toString(16)).slice(-2); }).join('');
+    });
+  }
+  function ck(n) { var m = d.cookie.match(new RegExp('(?:^|; )' + n + '=([^;]*)')); return m ? decodeURIComponent(m[1]) : ''; }
+  w.eiLead = function (eid, c, quelle) {
+    try {
+      if (consent !== 'all' || !eid) return;
+      c = c || {};
+      var em = String(c.email || '').trim().toLowerCase();
+      var ph = String(c.phone || '').replace(/\D/g, '').replace(/^00/, '');
+      var fn = String(c.fn || '').trim().toLowerCase(), ln = String(c.ln || '').trim().toLowerCase();
+      Promise.all([sha(em), sha(ph), sha(fn), sha(ln)]).then(function (h) {
+        var ud = { client_user_agent: navigator.userAgent };
+        if (h[0]) ud.em = [h[0]]; if (h[1]) ud.ph = [h[1]]; if (h[2]) ud.fn = [h[2]]; if (h[3]) ud.ln = [h[3]];
+        var fbp = ck('_fbp'), fbc = ck('_fbc') || (A.fbclid ? 'fb.1.' + (A.fbts || Date.now()) + '.' + A.fbclid : '');
+        if (fbp) ud.fbp = fbp; if (fbc) ud.fbc = fbc;
+        var body = { data: [{ event_name: 'Lead', event_time: Math.floor(Date.now() / 1000), event_id: eid, action_source: 'website',
+          event_source_url: location.origin + location.pathname, user_data: ud,
+          custom_data: { content_name: quelle === 'Rechner' ? 'Tarifvergleich PDF' : 'Beratungsanfrage', quelle: quelle || '' } }] };
+        var tc = ss('eifbtest'); if (tc) body.test_event_code = tc;
+        fetch(CAPI_HOOK, { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ event_id: eid, body: JSON.stringify(body) }) });
+      });
+    } catch (e) { }
+  };
+
   w.eiTrack = function (name, params, opt) {
     params = params || {}; opt = opt || {};
     if (name === 'Contact' && Date.now() - lastLead < 5000) return; /* WhatsApp-Öffnung direkt nach Lead nicht doppelt zählen */
