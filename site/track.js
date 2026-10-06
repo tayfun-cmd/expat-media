@@ -80,11 +80,8 @@
       rechner_berechnet: S.rb, rechner_lead: S.rl, whatsapp: S.wa, ereignisse: log.slice(0, 40).join(' > ')
     };
     for (var k in body) if (typeof body[k] === 'string') body[k] = clean(body[k]);
-    try {
-      var b = new Blob([JSON.stringify(body)], { type: 'application/json' });
-      if (navigator.sendBeacon && navigator.sendBeacon(LOG_HOOK, b)) return;
-      fetch(LOG_HOOK, { method: 'POST', body: JSON.stringify(body), keepalive: true, headers: { 'Content-Type': 'application/json' } });
-    } catch (e) { }
+    /* fetch mit keepalive: überlebt das Schließen der Seite; sendBeacon mit JSON lehnt Make ab */
+    try { fetch(LOG_HOOK, { method: 'POST', body: JSON.stringify(body), keepalive: true, headers: { 'Content-Type': 'application/json' } }); } catch (e) { }
   }
   /* Bots ausfiltern: nur senden, wenn die Seite wirklich sichtbar war */
   var seen = d.visibilityState === 'visible';
