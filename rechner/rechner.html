@@ -1502,12 +1502,28 @@ function pdfSichern(){ leadFormular(); }
 const LEAD_HOOK='https://hook.eu1.make.com/zixqizqwous0zrlppu9c6ujo16ehn9v7';
 const STAT_HOOK='https://hook.eu1.make.com/likdsg0ar8tm9kuqkluhazgvsp813ela';
 
+/* --- Weitergabe an das Website-Tracking (Meta-Pixel + eigenes Reporting) --- */
+let leadEid='';
+let ersteBerechnung=true;
+function PT(art,daten){
+  try{
+    const w=window.parent; if(!w||w===window||!w.eiTrack) return;
+    if(art==='berechnet'){ if(ersteBerechnung){ ersteBerechnung=false; w.eiTrack('RechnerBerechnet',{land:(daten&&daten.land)||'',personen:(daten&&daten.personen)||''}); } }
+    else if(art==='lead_gesendet') w.eiTrack('Lead',{quelle:'Rechner',content_name:'Tarifvergleich PDF'},{eventID:leadEid});
+    else if(art==='vergleich') w.eiTrack('RechnerVergleich',{});
+    else if(art==='antrag') w.eiTrack('RechnerAntrag',{tarif:(daten&&daten.tarif)||''});
+    else if(art==='unterlagen') w.eiTrack('RechnerUnterlagen',{tarif:(daten&&daten.tarif)||''});
+  }catch(e){}
+}
+function kampagne(){ try{ const w=window.parent; return (w&&w!==window&&w.eiAttr)?w.eiAttr():{}; }catch(e){ return {}; } }
+
 /* --- Zählung: sammelt anonym und schickt einmal pro Sitzung --- */
 const Stat={
   sitzung:(Math.random().toString(36).slice(2,10)),
   start:new Date().toISOString(),
   ereignisse:[], gesendet:false,
   merke:function(art,daten){
+    PT(art,daten);
     this.ereignisse.push(Object.assign({art:art,t:Math.round(performance.now()/1000)},daten||{}));
     if(this.ereignisse.length>60) this.ereignisse.shift();
   },
@@ -1636,7 +1652,9 @@ function pdfErzeugen(daten, fertigCb){
     const cols=wahl.map(id=>res.find(r=>r.t.id===id)).filter(Boolean);
     let s=''; const c=8192;
     for(let i=0;i<bytes.length;i+=c) s+=String.fromCharCode.apply(null,bytes.subarray(i,i+c));
-    const nutzlast={
+    leadEid='lead-'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+    const nutzlast=Object.assign({},kampagne(),{
+      event_id:leadEid,
       quelle:'Tarifrechner',
       sprache:L,
       zeitpunkt:new Date().toISOString(),
@@ -1660,7 +1678,7 @@ function pdfErzeugen(daten, fertigCb){
         Math.min.apply(null,cols.filter(x=>x.ok).map(x=>x.gesamt)):null,
       dateiname:name,
       pdf_base64:btoa(s)
-    };
+    });
     fetch(LEAD_HOOK,{method:'POST',headers:{'Content-Type':'application/json'},
                      body:JSON.stringify(nutzlast)})
       .then(r=>{ leadZu(); leadDanke(daten.email, r.ok); Stat.merke('lead_gesendet'); })
