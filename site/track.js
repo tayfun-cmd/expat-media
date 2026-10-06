@@ -75,7 +75,7 @@
       sitzung: SID, seite: location.pathname || '/', quelle: a.utm_source, medium: a.utm_medium,
       kampagne: a.utm_campaign, anzeige: a.utm_content, gruppe: a.utm_term, werbeklick: a.werbeklick,
       referrer: a.referrer, geraet: w.innerWidth < 760 ? 'mobil' : 'desktop',
-      sprache: (d.documentElement.lang || '').slice(0, 2), cookies: consent === 'all' ? 'ja' : (consent ? 'nein' : 'keine Wahl'),
+      sprache: en() ? 'en' : 'de', cookies: consent === 'all' ? 'ja' : (consent ? 'nein' : 'keine Wahl'),
       sekunden: Math.round((Date.now() - t0) / 1000), funnel_start: S.fs, funnel_schritt: S.step, funnel_lead: S.fl,
       rechner_berechnet: S.rb, rechner_lead: S.rl, whatsapp: S.wa, ereignisse: log.slice(0, 40).join(' > ')
     };
@@ -115,7 +115,7 @@
   w.open = function (u) { try { if (/wa\.me|whatsapp/i.test(String(u))) w.eiTrack('Contact', { kanal: 'WhatsApp' }); } catch (e) { } return wo.apply(w, arguments); };
 
   /* ---------- Cookie-Banner ---------- */
-  function en() { return (d.documentElement.lang || '').slice(0, 2) === 'en' || ls('eilang') === 'en'; }
+  function en() { var l = q.get('lang'); if (l) return l === 'en'; return ls('eilang') === 'en'; }
   var css = '.eick-ov{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(5,12,26,.55);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);opacity:0;transition:opacity .3s ease}' +
     '.eick-ov.on{opacity:1}' +
     '.eick{box-sizing:border-box;width:100%;max-width:min(400px,calc(100vw - 32px));background:#0b1a33;border:1px solid rgba(241,95,20,.45);border-radius:16px;padding:26px 24px 22px;color:#e8eef7;font:15px/1.55 "Instrument Sans",system-ui,-apple-system,sans-serif;box-shadow:0 30px 80px rgba(0,0,0,.45);transform:translateY(8px);transition:transform .3s ease}' +
