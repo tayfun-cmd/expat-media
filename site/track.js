@@ -107,10 +107,12 @@
   };
 
   /* WhatsApp-Klicks überall erkennen (Links und window.open) */
-  d.addEventListener('click', function (e) {
+  /* Bubble-Phase: Klicks, die der Funnel abfängt (Beratungs-Buttons), kommen hier nicht an */
+  w.addEventListener('click', function (e) {
+    if (e.defaultPrevented) return;
     var a = e.target.closest ? e.target.closest('a[href*="wa.me"],a[href*="whatsapp"]') : null;
     if (a) w.eiTrack('Contact', { kanal: 'WhatsApp' });
-  }, true);
+  });
   var wo = w.open;
   w.open = function (u) { try { if (/wa\.me|whatsapp/i.test(String(u))) w.eiTrack('Contact', { kanal: 'WhatsApp' }); } catch (e) { } return wo.apply(w, arguments); };
 
